@@ -1,38 +1,68 @@
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from models import db, ChatLog
-from flask_cors import CORS
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.orm import declarative_base, sessionmaker
 import os
 from dotenv import load_dotenv
 
-app = Flask(__name__)
+# 환경변수 로드
 load_dotenv()
+
+# FastAPI 앱 생성
+app = FastAPI()
+
 # CORS 설정
-CORS(app, resources={r"/chat": {"origins": ["http://127.0.0.1:5500", "http://localhost:5500"]}})
+origins = [
+    "http://127.0.0.1:5500",
+    "http://localhost:5500"
+]
 
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # CORS 허용 origin
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # SQLite 설정
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'chat.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+DATABASE_URL = f"sqlite:///{os.path.join(basedir, 'chat.db')}"
 
-# DB 초기화
-db.init_app(app)
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    user_input = request.json.get('message')
-    # TODO: RAG + GPT 연동으로 응답 생성
+
+# 모델 정의
+class ChatLog(Base):
+    __tablename__ = "chat_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_message = Column(String, nullable=False)
+    bot_response = Column(String, nullable=False)
+
+
+# 테이블 생성
+Base.metadata.create_all(bind=engine)
+
+
+# 요청 스키마
+class MessageRequest(BaseModel):
+    message: str
+
+
+# API 엔드포인트
+@app.post("/chat")
+async def chat(request: MessageRequest):
+    user_input = request.message
     response_text = f"'{user_input}'에 대한 응답입니다 (예시)"
-    
+
     # DB 저장
+    db = SessionLocal()
     chat_log = ChatLog(user_message=user_input, bot_response=response_text)
-    db.session.add(chat_log)
-    db.session.commit()
-    return jsonify({'response': response_text})
+    db.add(chat_log)
+    db.commit()
+    db.close()
 
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True, port=5000)
-
+    return {"response": response_text}
