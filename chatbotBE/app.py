@@ -1,14 +1,17 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import declarative_base, sessionmaker
-import os
 from dotenv import load_dotenv
-from chatbotBE.routes.chatgpt import router as chatgpt_router
+from pydantic import BaseModel
+import os
 
 # 환경변수 로드
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
+
+
+from chatbotBE.routes.chatgpt import router as chatgpt_router
+from chatbotBE.routes.profile_routes import router as profile_router
+from chatbotBE.db.database import init_db
+
 
 
 # FastAPI 앱 생성
@@ -28,14 +31,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(chatgpt_router)
-# SQLite 설정
-basedir = os.path.abspath(os.path.dirname(__file__))
-DATABASE_URL = f"sqlite:///{os.path.join(basedir, 'chat.db')}"
+# DB 초기화
+init_db()
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+# 라우터 등록
+app.include_router(chatgpt_router)
+app.include_router(profile_router)
 
 
 # # 모델 정의
