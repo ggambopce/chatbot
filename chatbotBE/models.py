@@ -1,10 +1,13 @@
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, Integer, Text, DateTime
+from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
-db = SQLAlchemy()
+Base = declarative_base()
 
-class ChatLog(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_message = db.Column(db.Text, nullable=False)
-    bot_response = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+class ChatLog(Base):
+    __tablename__ = "chat_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_message = Column(Text, nullable=False)
+    bot_response = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
