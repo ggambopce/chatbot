@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
+
 
 class UserCreateRequest(BaseModel):
     nickname: str
@@ -19,7 +21,7 @@ class UserResponse(BaseModel):
     gender: str
     bio: Optional[str]
     image_url: str
-    created_at: str
+    created_at: datetime
 
     class Config:
         orm_mode = True
