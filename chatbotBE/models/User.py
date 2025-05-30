@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+from chatbotBE.db.base import Base
 
 Base = declarative_base()
 

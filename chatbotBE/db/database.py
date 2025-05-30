@@ -1,7 +1,9 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from chatbotBE.models.user import Base  # or from models import Base
+from chatbotBE.db.base import Base
+from chatbotBE import models
+
 
 # 절대경로 설정
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
