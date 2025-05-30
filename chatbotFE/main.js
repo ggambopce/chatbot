@@ -1,12 +1,7 @@
-async function sendMessage() {
-  const input = document.getElementById("input").value;
+import { renderProfileForm } from "./components/ProfileForm.js";
+import { renderRandomProfile } from "./components/RandomProfileCard.js";
 
-  const res = await fetch("http://127.0.0.1:5000/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: input }),
-  });
-
-  const data = await res.json();
-  document.getElementById("response").innerText = data.response;
-}
+document.addEventListener("DOMContentLoaded", () => {
+  renderProfileForm(document.getElementById("formSection"));
+  renderRandomProfile(document.getElementById("randomSection"));
+});
