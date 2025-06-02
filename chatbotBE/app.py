@@ -7,7 +7,7 @@ import os
 # 환경변수 로드
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
 
-
+from chatbotBE.routes.survey_routes import router as survey_router
 from chatbotBE.routes.chatgpt import router as chatgpt_router
 from chatbotBE.routes.profile_routes import router as profile_router
 from chatbotBE.db.database import init_db
@@ -37,6 +37,7 @@ init_db()
 # 라우터 등록
 app.include_router(chatgpt_router)
 app.include_router(profile_router)
+app.include_router(survey_router)
 
 
 # # 모델 정의
